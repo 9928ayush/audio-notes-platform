@@ -1,7 +1,7 @@
 fastapi==0.104.1
 uvicorn==0.24.0
 sqlalchemy==2.0.40
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.13
 celery==5.3.6
 redis==5.0.1
 python-multipart==0.0.6

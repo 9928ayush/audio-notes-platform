@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Markdown from "react-markdown";
@@ -28,7 +29,7 @@ export default function Home() {
         const data: AudioJob[] = await res.json();
         setHistory(data);
       }
-    } catch (error) {
+    } catch {
       console.error("Failed to fetch history");
     }
   };
@@ -39,7 +40,7 @@ export default function Home() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (activeJob && activeJob.id && !["COMPLETED", "FAILED"].includes(activeJob.status)) {
       interval = setInterval(async () => {
         try {
@@ -85,8 +86,12 @@ export default function Home() {
     formData.append("file", file);
 
     try {
-      setActiveJob({ status: "UPLOADING", filename: file.name, created_at: new Date().toISOString() } as AudioJob);
-      
+      setActiveJob({
+        status: "UPLOADING",
+        filename: file.name,
+        created_at: new Date().toISOString()
+      } as AudioJob);
+
       const res = await fetch(`${API_URL}/api/jobs`, {
         method: "POST",
         body: formData,
@@ -94,27 +99,37 @@ export default function Home() {
       const data = await res.json();
       if (res.ok) {
         setActiveJob(data);
-        setFile(null); // Clear file selection after upload starts
-        if (fileInputRef.current) fileInputRef.current.value = '';
+        setFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
       } else {
-        setActiveJob({ status: "FAILED", error_message: data.detail || "Upload failed." } as AudioJob);
+        setActiveJob({
+          status: "FAILED",
+          error_message: data.detail || "Upload failed."
+        } as AudioJob);
       }
-    } catch (err) {
-      setActiveJob({ status: "FAILED", error_message: "Network error during upload." } as AudioJob);
+    } catch {
+      setActiveJob({
+        status: "FAILED",
+        error_message: "Network error during upload."
+      } as AudioJob);
     }
   };
 
-  const isProcessing = activeJob !== null && !["COMPLETED", "FAILED"].includes(activeJob.status);
-
-  // Status mapping for simple timeline
   const getStatusStep = (status: string) => {
     switch (status) {
-      case 'UPLOADED': case 'UPLOADING': return 0;
-      case 'TRANSCRIBING': return 1;
-      case 'SUMMARIZING': return 2;
-      case 'COMPLETED': return 3;
-      case 'FAILED': return -1;
-      default: return 0;
+      case "UPLOADED":
+      case "UPLOADING":
+        return 0;
+      case "TRANSCRIBING":
+        return 1;
+      case "SUMMARIZING":
+        return 2;
+      case "COMPLETED":
+        return 3;
+      case "FAILED":
+        return -1;
+      default:
+        return 0;
     }
   };
 
@@ -123,7 +138,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#fafafa] text-[#111] font-sans antialiased selection:bg-neutral-200">
       
-      {/* Navbar */}
+      {/* Header */}
       <header className="border-b border-neutral-200 bg-white">
         <div className="max-w-[1200px] mx-auto px-6 h-14 flex items-center justify-between text-sm">
           <div className="font-semibold tracking-tight">Audio Notes</div>
@@ -141,24 +156,30 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Main Container */}
       <main className="max-w-[1200px] mx-auto px-6 py-12 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
         
-        {/* Left Column (Main Workspace) */}
+        {/* Main Workspace */}
         <div className="lg:col-span-8 flex flex-col gap-10">
           
           {!activeJob ? (
-            // INITIAL STATE: Introduction & Upload
             <>
               <div>
-                <div className="text-[11px] font-medium text-neutral-400 uppercase tracking-widest mb-3">Audio Notes</div>
-                <h1 className="text-2xl md:text-3xl font-medium tracking-tight mb-3">Turn conversations into notes.</h1>
+                <div className="text-[11px] font-medium text-neutral-400 uppercase tracking-widest mb-3">
+                  Audio Notes
+                </div>
+                <h1 className="text-2xl md:text-3xl font-medium tracking-tight mb-3">
+                  Turn conversations into notes.
+                </h1>
                 <p className="text-neutral-500 text-sm md:text-base leading-relaxed max-w-lg">
                   Upload an audio recording and get a searchable transcript and concise summary.
                 </p>
               </div>
 
               <div 
-                className={`border border-neutral-200 bg-white p-8 md:p-12 transition-colors ${!file ? 'hover:border-neutral-300 hover:bg-neutral-50 cursor-pointer' : ''}`}
+                className={`border border-neutral-200 bg-white p-8 md:p-12 transition-colors ${
+                  !file ? "hover:border-neutral-300 hover:bg-neutral-50 cursor-pointer" : ""
+                }`}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onClick={() => !file && fileInputRef.current?.click()}
@@ -168,12 +189,18 @@ export default function Home() {
                     <p className="text-sm font-medium mb-1">Drop an audio file here</p>
                     <p className="text-sm text-neutral-500 mb-6">or choose a file from your device</p>
                     <button 
-                      onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fileInputRef.current?.click();
+                      }}
                       className="text-sm px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 transition-colors rounded-sm"
                     >
                       Choose file
                     </button>
-                    <p className="text-[11px] text-neutral-400 mt-6 uppercase tracking-wider">Supports all standard and mobile audio formats</p>
+                    <p className="text-[11px] text-neutral-400 mt-6 tracking-wide">
+                      Supports all standard and mobile audio formats
+                    </p>
                   </div>
                 ) : (
                   <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -183,12 +210,14 @@ export default function Home() {
                     </div>
                     <div className="flex gap-3 w-full md:w-auto">
                       <button 
+                        type="button"
                         onClick={() => setFile(null)}
                         className="text-sm px-4 py-2 border border-neutral-200 text-neutral-500 hover:bg-neutral-50 rounded-sm flex-1 md:flex-none"
                       >
                         Cancel
                       </button>
                       <button 
+                        type="button"
                         onClick={handleUpload}
                         className="text-sm px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-sm flex-1 md:flex-none"
                       >
@@ -207,10 +236,9 @@ export default function Home() {
               </div>
             </>
           ) : (
-            // ACTIVE JOB STATE: Processing or Completed
             <div className="flex flex-col gap-10">
               
-              {/* Header */}
+              {/* Active Header & Minimal Timeline */}
               <div className="border-b border-neutral-200 pb-6">
                 <div className="flex items-baseline justify-between mb-2">
                   <h2 className="text-xl font-medium tracking-tight truncate pr-4">{activeJob.filename}</h2>
@@ -219,26 +247,26 @@ export default function Home() {
                   </span>
                 </div>
                 
-                {/* Minimal Timeline */}
                 <div className="flex gap-6 mt-4 text-xs font-medium">
-                  <div className={`flex items-center gap-2 ${currentStep >= 0 ? 'text-neutral-900' : 'text-neutral-400'}`}>
-                    {currentStep > 0 ? '✓' : currentStep === 0 ? '•' : '○'} Upload
+                  <div className={`flex items-center gap-2 ${currentStep >= 0 ? "text-neutral-900" : "text-neutral-400"}`}>
+                    {currentStep > 0 ? "✓" : currentStep === 0 ? "•" : "○"} Upload
                   </div>
-                  <div className={`flex items-center gap-2 ${currentStep >= 1 ? 'text-neutral-900' : 'text-neutral-400'}`}>
-                    {currentStep > 1 ? '✓' : currentStep === 1 ? '•' : '○'} Transcription
+                  <div className={`flex items-center gap-2 ${currentStep >= 1 ? "text-neutral-900" : "text-neutral-400"}`}>
+                    {currentStep > 1 ? "✓" : currentStep === 1 ? "•" : "○"} Transcription
                   </div>
-                  <div className={`flex items-center gap-2 ${currentStep >= 2 ? 'text-neutral-900' : 'text-neutral-400'}`}>
-                    {currentStep > 2 ? '✓' : currentStep === 2 ? '•' : '○'} Summary
+                  <div className={`flex items-center gap-2 ${currentStep >= 2 ? "text-neutral-900" : "text-neutral-400"}`}>
+                    {currentStep > 2 ? "✓" : currentStep === 2 ? "•" : "○"} Summary
                   </div>
                 </div>
               </div>
 
-              {/* Status Content */}
+              {/* Error State */}
               {activeJob.status === "FAILED" && (
                 <div className="border border-neutral-200 bg-white p-6">
                   <h3 className="text-sm font-medium mb-2">Processing failed</h3>
                   <p className="text-sm text-neutral-500 mb-4">{activeJob.error_message || "The audio could not be processed."}</p>
                   <button 
+                    type="button"
                     onClick={() => setActiveJob(null)}
                     className="text-sm px-4 py-2 border border-neutral-200 hover:bg-neutral-50 rounded-sm"
                   >
@@ -247,6 +275,7 @@ export default function Home() {
                 </div>
               )}
 
+              {/* Completed Result Layout */}
               {activeJob.status === "COMPLETED" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                   <div>
@@ -267,7 +296,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Right Column (History) */}
+        {/* History Column */}
         <div className="lg:col-span-4">
           <div className="sticky top-14 pt-8 lg:pt-0 border-t border-neutral-200 lg:border-t-0">
             <h2 className="text-xs font-medium text-neutral-400 uppercase tracking-widest mb-6">Recent notes</h2>
@@ -287,9 +316,11 @@ export default function Home() {
                       key={job.id}
                       onClick={() => {
                         setActiveJob(job);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        window.scrollTo({ top: 0, behavior: "smooth" });
                       }}
-                      className={`grid grid-cols-12 gap-4 py-2 px-2 -mx-2 text-sm cursor-pointer hover:bg-neutral-100 rounded-sm transition-colors ${activeJob?.id === job.id ? 'bg-neutral-100' : ''}`}
+                      className={`grid grid-cols-12 gap-4 py-2 px-2 -mx-2 text-sm cursor-pointer hover:bg-neutral-100 rounded-sm transition-colors ${
+                        activeJob?.id === job.id ? "bg-neutral-100" : ""
+                      }`}
                     >
                       <div className="col-span-6 truncate font-medium text-neutral-800" title={job.filename}>
                         {job.filename}
@@ -298,7 +329,7 @@ export default function Home() {
                         {job.status.toLowerCase()}
                       </div>
                       <div className="col-span-3 text-right text-neutral-400 truncate">
-                        {new Date(job.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        {new Date(job.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                       </div>
                     </div>
                   ))}
@@ -307,7 +338,7 @@ export default function Home() {
             )}
           </div>
         </div>
-        
+
       </main>
     </div>
   );

@@ -115,6 +115,26 @@ export default function Home() {
     }
   };
 
+  const handleDelete = async (jobId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevents the row click from triggering
+    if (!window.confirm("Are you sure you want to delete this note?")) return;
+    
+    try {
+      const res = await fetch(`${API_URL}/api/jobs/${jobId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setHistory((prev) => prev.filter((job) => job.id !== jobId));
+        if (activeJob?.id === jobId) {
+          setActiveJob(null);
+          setFile(null);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to delete job", err);
+    }
+  };
+
   const getStatusStep = (status: string) => {
     switch (status) {
       case "UPLOADED":
@@ -305,10 +325,11 @@ export default function Home() {
               <p className="text-sm text-neutral-500">Your uploaded recordings will appear here.</p>
             ) : (
               <div className="flex flex-col">
-                <div className="grid grid-cols-12 gap-4 pb-2 border-b border-neutral-200 text-xs text-neutral-400 mb-2">
-                  <div className="col-span-6">File</div>
+                <div className="grid grid-cols-12 gap-4 pb-2 border-b border-neutral-200 text-xs text-neutral-400 mb-2 pr-2">
+                  <div className="col-span-5">File</div>
                   <div className="col-span-3">Status</div>
                   <div className="col-span-3 text-right">Date</div>
+                  <div className="col-span-1"></div>
                 </div>
                 <div className="max-h-[600px] overflow-y-auto pr-2 flex flex-col gap-1">
                   {history.map((job) => (
@@ -318,11 +339,11 @@ export default function Home() {
                         setActiveJob(job);
                         window.scrollTo({ top: 0, behavior: "smooth" });
                       }}
-                      className={`grid grid-cols-12 gap-4 py-2 px-2 -mx-2 text-sm cursor-pointer hover:bg-neutral-100 rounded-sm transition-colors ${
+                      className={`grid grid-cols-12 gap-4 py-2 px-2 -mx-2 text-sm cursor-pointer hover:bg-neutral-100 rounded-sm transition-colors group items-center ${
                         activeJob?.id === job.id ? "bg-neutral-100" : ""
                       }`}
                     >
-                      <div className="col-span-6 truncate font-medium text-neutral-800" title={job.filename}>
+                      <div className="col-span-5 truncate font-medium text-neutral-800" title={job.filename}>
                         {job.filename}
                       </div>
                       <div className="col-span-3 text-neutral-500 capitalize">
@@ -330,6 +351,19 @@ export default function Home() {
                       </div>
                       <div className="col-span-3 text-right text-neutral-400 truncate">
                         {new Date(job.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      </div>
+                      <div className="col-span-1 flex justify-end opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={(e) => handleDelete(job.id, e)}
+                          className="p-1 text-neutral-400 hover:text-red-500 transition-colors rounded hover:bg-white"
+                          title="Delete note"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                          </svg>
+                        </button>
                       </div>
                     </div>
                   ))}

@@ -173,7 +173,7 @@ export default function Home() {
                     >
                       Choose file
                     </button>
-                    <p className="text-[11px] text-neutral-400 mt-6 uppercase tracking-wider">MP3 · WAV · M4A · OGG · AAC</p>
+                    <p className="text-[11px] text-neutral-400 mt-6 uppercase tracking-wider">Supports all standard and mobile audio formats</p>
                   </div>
                 ) : (
                   <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -199,7 +199,7 @@ export default function Home() {
                 )}
                 <input 
                   type="file" 
-                  accept="audio/*" 
+                  accept="audio/*,video/mp4,video/3gpp,.aac,.m4a,.ogg,.mp3,.wav,.3gp,.amr,.mp4" 
                   ref={fileInputRef}
                   onChange={handleFileChange} 
                   className="hidden"

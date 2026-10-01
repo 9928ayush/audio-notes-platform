@@ -33,15 +33,16 @@ def health_check():
 
 @app.post("/api/jobs")
 async def create_upload_job(file: UploadFile = File(...), db: Session = Depends(get_db)):
-    if not file.filename.lower().endswith(('.mp3', '.wav', '.m4a', '.ogg', '.aac')):
-        raise HTTPException(status_code=400, detail="Invalid audio format.")
-    
+    # Read the file once
     file_bytes = await file.read()
+    
     try:
+        # Save the file (no extension blocking!)
         storage_url = save_upload_file(file_bytes, file.filename)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Storage failure: {str(e)}")
     
+    # Create the database record
     job = AudioJob(filename=file.filename, storage_url=storage_url, status=JobStatus.UPLOADED)
     db.add(job)
     db.commit()

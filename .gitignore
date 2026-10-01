@@ -1,0 +1,17 @@
+# Node
+node_modules/
+.next/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+env/
+.venv/
+
+# Secrets
+.env
+.env.local
+
+# Local Uploads
+backend/uploads/

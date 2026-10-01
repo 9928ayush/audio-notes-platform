@@ -1,5 +1,5 @@
 import os
-from pydub import AudioSegment
+import subprocess
 import imageio_ffmpeg
 from dotenv import load_dotenv
 from celery import Celery
@@ -7,9 +7,6 @@ from database import SessionLocal
 from models import AudioJob, JobStatus
 from gnani_service import transcribe_audio
 from llm_service import generate_summary
-
-# Force pydub to use the packaged FFmpeg binary so it works seamlessly on Render
-AudioSegment.converter = imageio_ffmpeg.get_ffmpeg_exe()
 
 load_dotenv()
 
@@ -21,9 +18,18 @@ def ensure_mp3_format(file_path: str) -> str:
     print(f"Converting {file_path} to MP3...")
     output_path = f"{os.path.splitext(file_path)[0]}.mp3"
     
-    # Load the original file (m4a, ogg, wav) and export as standard MP3
-    audio = AudioSegment.from_file(file_path)
-    audio.export(output_path, format="mp3", bitrate="128k")
+    # Use the static FFmpeg binary directly (Bypasses pydub completely)
+    ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+    
+    # Run the FFmpeg conversion command safely in the background
+    subprocess.run([
+        ffmpeg_exe, 
+        "-y",               # Overwrite output file if it exists
+        "-i", file_path,    # Input file
+        "-vn",              # Strip video (crucial if the mobile file is an mp4/3gp)
+        "-b:a", "128k",     # Set audio bitrate to 128k
+        output_path
+    ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     
     return output_path
 

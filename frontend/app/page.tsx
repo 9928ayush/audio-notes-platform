@@ -173,7 +173,7 @@ export default function Home() {
                     >
                       Choose file
                     </button>
-                    <p className="text-[11px] text-neutral-400 mt-6 uppercase tracking-wider">MP3 · WAV · M4A · OGG</p>
+                    <p className="text-[11px] text-neutral-400 mt-6 uppercase tracking-wider">MP3 · WAV · M4A · OGG · AAC</p>
                   </div>
                 ) : (
                   <div className="flex flex-col md:flex-row items-center justify-between gap-6">

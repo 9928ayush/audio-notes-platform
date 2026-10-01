@@ -33,7 +33,7 @@ def health_check():
 
 @app.post("/api/jobs")
 async def create_upload_job(file: UploadFile = File(...), db: Session = Depends(get_db)):
-    if not file.filename.lower().endswith(('.mp3', '.wav', '.m4a', '.ogg')):
+    if not file.filename.lower().endswith(('.mp3', '.wav', '.m4a', '.ogg', '.aac')):
         raise HTTPException(status_code=400, detail="Invalid audio format.")
     
     file_bytes = await file.read()
